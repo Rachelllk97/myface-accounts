@@ -2,6 +2,7 @@
 using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
+using MyFace.Utilities;
 
 namespace MyFace.Controllers
 {
@@ -34,15 +35,21 @@ namespace MyFace.Controllers
         [HttpPost("create")]
         public IActionResult Create([FromBody] CreateUserRequest newUser)
         {
+//call our salt generator here and store to database
+//call our hashing method here use salt 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            
-            var user = _users.Create(newUser);
+            var saltGenerator = new SaltGenerator();
+            var hashGenerator = new HashGenerator();
+            byte[] salt = saltGenerator.GenerateSalt();
+            string hashedPassword = hashGenerator.GenerateHash(newUser.Password, salt);
+            var user = _users.Create(newUser, hashedPassword, salt );
 
             var url = Url.Action("GetById", new { id = user.Id });
             var responseViewModel = new UserResponse(user);
+            
             return Created(url, responseViewModel);
         }
 
@@ -64,5 +71,9 @@ namespace MyFace.Controllers
             _users.Delete(id);
             return Ok();
         }
+    }
+
+    public class hashedPassword
+    {
     }
 }

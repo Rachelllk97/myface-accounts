@@ -10,7 +10,7 @@ namespace MyFace.Repositories
         IEnumerable<User> Search(UserSearchRequest search);
         int Count(UserSearchRequest search);
         User GetById(int id);
-        User Create(CreateUserRequest newUser);
+        User Create(CreateUserRequest newUser, string hashedPassword, byte[] salt);
         User Update(int id, UpdateUserRequest update);
         void Delete(int id);
     }
@@ -57,7 +57,7 @@ namespace MyFace.Repositories
                 .Single(user => user.Id == id);
         }
 
-        public User Create(CreateUserRequest newUser)
+        public User Create(CreateUserRequest newUser, string hashedPassword, byte[] salt)
         {
             var insertResponse = _context.Users.Add(new User
             {
@@ -67,6 +67,8 @@ namespace MyFace.Repositories
                 Username = newUser.Username,
                 ProfileImageUrl = newUser.ProfileImageUrl,
                 CoverImageUrl = newUser.CoverImageUrl,
+                HashedPassword = hashedPassword,
+                Salt = salt.ToString(),
             });
             _context.SaveChanges();
 
