@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
 using MyFace.Utilities;
+using MyFace.Services;
 
 namespace MyFace.Controllers
 {
@@ -12,9 +15,12 @@ namespace MyFace.Controllers
     {
         private readonly IUsersRepo _users;
 
-        public UsersController(IUsersRepo users)
+         private readonly AuthenticationServices _authService;
+
+        public UsersController(IUsersRepo users, AuthenticationServices _authenticationService)
         {
             _users = users;
+            _authenticationService = _authService;
         }
         
         [HttpGet("")]
@@ -28,23 +34,46 @@ namespace MyFace.Controllers
         [HttpGet("{id}")]
         public ActionResult<UserResponse> GetById([FromRoute] int id)
         {
-            var user = _users.GetById(id);
-            return new UserResponse(user);
-        }
+            if (!Request.Headers.TryGetValue("Authorisation", out var token))
+            {
+                return Unauthorized(new { message = "Authorisation header missing" });
+            }
+
+            var authenticated = _authService.IsUserAuthenticated(token, _users);
+
+            if (authenticated)
+            {
+
+                var user = _users.GetById(id);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
+                var saltGenerator = new SaltGenerator();
+                var hashGenerator = new HashGenerator();
+                byte[] saltArray = saltGenerator.GenerateSalt();
+                string salt = Convert.ToBase64String(saltArray);
+                string hashedPassword = hashGenerator.GenerateHash(user.HashedPassword, saltArray);
+
+                return Ok(new UserResponse(user));
+            }
+            return Unauthorized(new { message = "Not an authorised user" });
+            }
+        
+
 
         [HttpPost("create")]
         public IActionResult Create([FromBody] CreateUserRequest newUser)
         {
-//call our salt generator here and store to database
-//call our hashing method here use salt 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             var saltGenerator = new SaltGenerator();
             var hashGenerator = new HashGenerator();
-            byte[] salt = saltGenerator.GenerateSalt();
-            string hashedPassword = hashGenerator.GenerateHash(newUser.Password, salt);
+            byte[] saltArray = saltGenerator.GenerateSalt();
+            string salt = Convert.ToBase64String(saltArray);
+            string hashedPassword = hashGenerator.GenerateHash(newUser.Password, saltArray);
             var user = _users.Create(newUser, hashedPassword, salt );
 
             var url = Url.Action("GetById", new { id = user.Id });

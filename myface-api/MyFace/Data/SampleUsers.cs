@@ -2,7 +2,7 @@
 using System.Linq;
 using MyFace.Models.Database;
 using MyFace.Utilities;
-
+using System;
 namespace MyFace.Data
 {
     public static class SampleUsers
@@ -122,8 +122,10 @@ namespace MyFace.Data
         {
             var saltGenerator = new SaltGenerator();
             var hashGenerator = new HashGenerator();
-            byte[] salt = saltGenerator.GenerateSalt();
-            string hashedPassword = hashGenerator.GenerateHash(Data[index][4], salt);
+            byte[] saltArray = saltGenerator.GenerateSalt();
+            string salt = Convert.ToBase64String(saltArray);
+            string hashedPassword = hashGenerator.GenerateHash(Data[index][4], saltArray);
+            //string salt = saltArray.ToString();
             return new User
             {
                 FirstName = Data[index][0],
@@ -133,7 +135,7 @@ namespace MyFace.Data
                 ProfileImageUrl = ImageGenerator.GetProfileImage(Data[index][2]),
                 CoverImageUrl = ImageGenerator.GetCoverImage(index),
                 HashedPassword = hashedPassword,
-                Salt = salt.ToString()
+                Salt = salt
             };
         }
     }

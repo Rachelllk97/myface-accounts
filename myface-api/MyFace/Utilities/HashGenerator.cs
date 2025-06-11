@@ -23,6 +23,11 @@ namespace MyFace.Utilities
             Console.WriteLine($"Hashed: {hashed}");
             return  hashed;
              }
+
+        internal string GenerateHash(string v, string salt)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }
