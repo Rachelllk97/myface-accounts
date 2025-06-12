@@ -17,10 +17,10 @@ namespace MyFace.Controllers
 
          private readonly AuthenticationServices _authService;
 
-        public UsersController(IUsersRepo users, AuthenticationServices _authenticationService)
+        public UsersController(IUsersRepo users, AuthenticationServices authenticationService)
         {
             _users = users;
-            _authenticationService = _authService;
+            _authService = authenticationService;
         }
         
         [HttpGet("")]
