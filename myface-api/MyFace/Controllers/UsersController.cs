@@ -34,7 +34,7 @@ namespace MyFace.Controllers
         [HttpGet("{id}")]
         public ActionResult<UserResponse> GetById([FromRoute] int id)
         {
-            if (!Request.Headers.TryGetValue("Authorisation", out var token))
+            if (!Request.Headers.TryGetValue("Authorization", out var token))
             {
                 return Unauthorized(new { message = "Authorisation header missing" });
             }

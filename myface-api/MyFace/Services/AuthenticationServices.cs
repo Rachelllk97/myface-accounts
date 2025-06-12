@@ -26,9 +26,9 @@ namespace MyFace.Services
             string password = credentials.Substring(separator + 1);
             var user = _users.GetByUserName(userName);
             var salt = user.Salt;
-
+            byte[] saltArray = Convert.FromBase64String(salt);
             var hashGenerator = new HashGenerator();
-            var hashedPassword = hashGenerator.GenerateHash(password, salt);
+            var hashedPassword = hashGenerator.GenerateHash(password, saltArray);
 
             return user.HashedPassword == hashedPassword;
 
