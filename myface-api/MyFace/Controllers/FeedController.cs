@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
 
 namespace MyFace.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("feed")]
     public class FeedController : ControllerBase

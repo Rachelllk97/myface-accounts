@@ -15,7 +15,14 @@ namespace MyFace.Services
 
     public class AuthenticationServices
     {
-        public bool IsUserAuthenticated(string credentials, IUsersRepo _users)
+        private readonly IUsersRepo _users;
+
+        public AuthenticationServices(IUsersRepo users)
+        {
+            _users = users;
+        }
+
+        public bool IsUserAuthenticated(string credentials)
         {
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
@@ -32,6 +39,15 @@ namespace MyFace.Services
 
             return user.HashedPassword == hashedPassword;
 
+        }
+
+        public string CheckAuthorizationHeader(HttpRequest request)
+        {
+            if (!request.Headers.TryGetValue("Authorization", out var token))
+            {
+                return null; 
+            }
+            return token;
         }
 
     }

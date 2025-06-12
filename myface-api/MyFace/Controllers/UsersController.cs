@@ -6,9 +6,12 @@ using MyFace.Models.Response;
 using MyFace.Repositories;
 using MyFace.Utilities;
 using MyFace.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyFace.Controllers
 {
+    
+    [Authorize]
     [ApiController]
     [Route("/users")]
     public class UsersController : ControllerBase
@@ -34,30 +37,10 @@ namespace MyFace.Controllers
         [HttpGet("{id}")]
         public ActionResult<UserResponse> GetById([FromRoute] int id)
         {
-            if (!Request.Headers.TryGetValue("Authorization", out var token))
-            {
-                return Unauthorized(new { message = "Authorisation header missing" });
-            }
-
-            var authenticated = _authService.IsUserAuthenticated(token, _users);
-
-            if (authenticated)
-            {
-
+            
                 var user = _users.GetById(id);
-                if (user == null)
-                {
-                    return NotFound(new { message = "User not found" });
-                }
-                var saltGenerator = new SaltGenerator();
-                var hashGenerator = new HashGenerator();
-                byte[] saltArray = saltGenerator.GenerateSalt();
-                string salt = Convert.ToBase64String(saltArray);
-                string hashedPassword = hashGenerator.GenerateHash(user.HashedPassword, saltArray);
-
                 return Ok(new UserResponse(user));
-            }
-            return Unauthorized(new { message = "Not an authorised user" });
+            
             }
         
 
@@ -100,9 +83,5 @@ namespace MyFace.Controllers
             _users.Delete(id);
             return Ok();
         }
-    }
-
-    public class hashedPassword
-    {
     }
 }

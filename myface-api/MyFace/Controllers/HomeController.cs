@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MyFace.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("")]
     public class HomeController : ControllerBase

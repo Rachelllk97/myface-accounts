@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +48,16 @@ namespace MyFace
             services.AddTransient<IPostsRepo, PostsRepo>();
             services.AddTransient<IUsersRepo, UsersRepo>();
             services.AddTransient<AuthenticationServices, AuthenticationServices>();
+
+            services.AddScoped<AuthenticationServices, AuthenticationServices>();
+            // 4. Add Authentication with our BasicAuthenticationHandler
+            services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
+
+            //^^^^^^^^Where does this go?
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,6 +78,8 @@ namespace MyFace
             app.UseRouting();
 
             app.UseCors(CORS_POLICY_NAME);
+
+            app.UseAuthorization(); 
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
