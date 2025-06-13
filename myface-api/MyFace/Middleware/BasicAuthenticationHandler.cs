@@ -26,13 +26,15 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            AuthenticationServices authService)
+            AuthenticationServices authService,
+            IUsersRepo users)
             //Passes options, logger, and encoder to the base class constructor
             : base(options, logger, encoder)
     {
 
 
         _authService = authService;
+        _users = users;
 
     }
 
@@ -74,16 +76,28 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
         {
             // Use the IUserService to validate the user credentials.
             var user = _users.GetByUserName(userName);
+
+             
+                if (user == null)
+                {
+                    return AuthenticateResult.Fail("User not found");
+                }
+
+
             var salt = user.Salt;
             byte[] saltArray = Convert.FromBase64String(salt);
             var hashGenerator = new HashGenerator();
             var hashedPassword = hashGenerator.GenerateHash(password, saltArray);
-            if(user.HashedPassword != hashedPassword)
-            if (user == null || user.HashedPassword != hashedPassword)
-            {
+              
+
+                if (user.HashedPassword != hashedPassword)
+                {
+                    return AuthenticateResult.Fail("Invalid password");
+                }
+
+
                 // If no user matches the provided credentials, fail authentication.
-                return AuthenticateResult.Fail("Invalid Username or Password");
-            }
+    
             // If the credentials are valid, create claims for the user.
             // Claims describe the user (ID, email, roles, etc.).
             var claims = new[]
@@ -126,54 +140,5 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 
 
 
-
-
-
-
-
-
-
-
-
-        // public AuthenticationMiddleware(AuthenticationServices authService)
-            // {
-            //     _authService = authService;
-            // }
-            // public async Task HandleAsync(
-            //     RequestDelegate next,
-            //     HttpContext context,
-            //     AuthorizationPolicy policy,
-            //     PolicyAuthorizationResult authorizeResult)
-
-            // {
-
-            // // If the authorization was forbidden and the resource had a specific requirement,
-            // // provide a custom 404 response.
-            // var token = _authService.CheckAuthorizationHeader(context.Request);
-
-            // var authenticated = _authService.IsUserAuthenticated(token);
-
-            // if(token == null && !authenticated) {
-            //     context.Response.StatusCode = StatusCodes.Status404NotFound;
-            //     await context.Response.WriteAsync("Unauthorized request");
-            //     return;
-            // }
-
-            // // // if (authorizeResult.Forbidden
-            // // //     && authorizeResult.AuthorizationFailure!.FailedRequirements
-            // // //         .OfType<Show404Requirement>().Any())
-            // // {
-            // //     // Return a 404 to make it appear as if the resource doesn't exist.
-            // //     context.Response.StatusCode = StatusCodes.Status404NotFound;
-            // //     return;
-
-
-            //     // Fall back to the default implementation.
-            //     await defaultHandler.HandleAsync(next, context, policy, authorizeResult);
-
-        }
-}
-
-    
 
 

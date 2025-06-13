@@ -47,8 +47,6 @@ namespace MyFace
             services.AddTransient<IInteractionsRepo, InteractionsRepo>();
             services.AddTransient<IPostsRepo, PostsRepo>();
             services.AddTransient<IUsersRepo, UsersRepo>();
-            services.AddTransient<AuthenticationServices, AuthenticationServices>();
-
             services.AddScoped<AuthenticationServices, AuthenticationServices>();
             // 4. Add Authentication with our BasicAuthenticationHandler
             services.AddAuthentication("BasicAuthentication")
@@ -75,10 +73,12 @@ namespace MyFace
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
+            // app.UseRouting();
 
             app.UseCors(CORS_POLICY_NAME);
 
+            app.UseAuthentication(); 
+             app.UseRouting();
             app.UseAuthorization(); 
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
